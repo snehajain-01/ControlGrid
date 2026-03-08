@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monolab | Project Manager</title>
+    <style>
+        :root {
+            --bg: #09090b;
+            --card-bg: #121214;
+            --border: #27272a;
+            --text-muted: #a1a1aa;
+            --text-main: #fafafa;
+            --primary: #ffffff;
+            --primary-foreground: #09090b;
+            --accent: #3f3f46;
+            --radius: 8px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; margin: 0; }
+        h3 { font-size: 16px; font-weight: 500; margin-top: 0; margin-bottom: 16px; }
+
+        /* Monolab Card Style */
+        .card {
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+
+        .stat-label { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+        .stat-value { font-size: 24px; font-weight: 700; }
+
+        /* Forms */
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: #18181b;
+            color: white;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: border 0.2s;
+        }
+
+        input:focus { outline: none; border-color: var(--text-muted); }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+
+        input[type="checkbox"] { width: auto; margin: 0; }
+
+        /* Buttons */
+        .btn-group { display: flex; gap: 12px; }
+        
+        button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--primary-foreground);
+            border: none;
+        }
+
+        .btn-primary:hover { opacity: 0.9; }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover { background: var(--accent); }
+
+        /* Badges */
+        .badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-success { background: #14532d; color: #4ade80; border: 1px solid #166534; }
+        .badge-warning { background: #3f3f46; color: #d4d4d8; border: 1px solid #52525b; }
+
+        /* Task List */
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .task-item:last-child { border-bottom: none; }
+        .task-info { display: flex; flex-direction: column; gap: 4px; }
+        .task-name { font-weight: 500; font-size: 14px; }
+        .task-meta { font-size: 12px; color: var(--text-muted); }
+
+        /* Avatars */
+        .avatar-stack { display: flex; gap: 8px; }
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--bg);
+            background: var(--accent);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Startup Manager</h1>
+        <div class="avatar-stack">
+            <img src="https://i.pravatar.cc/32?img=1" class="avatar" alt="User">
+            <img src="https://i.pravatar.cc/32?img=2" class="avatar" alt="User">
+            <img src="https://i.pravatar.cc/32?img=3" class="avatar" alt="User">
+        </div>
+    </header>
+
+    <div class="card" style="display: flex; align-items: center; justify-content: space-between;">
+        <div>
+            <h3 style="margin-bottom: 4px;">System Status</h3>
+            <p style="color: var(--text-muted); font-size: 14px; margin: 0;">AI Model 3.5 deployment successful.</p>
+        </div>
+        <span class="badge badge-success">Operational</span>
+    </div>
+
+    <div class="grid">
+        <div class="stat-card">
+            <div class="stat-label">Active Projects</div>
+            <div class="stat-value">08</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Team Members</div>
+            <div class="stat-value">14</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Completed Tasks</div>
+            <div class="stat-value">124</div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px;">
+        <div class="card">
+            <h3>Create Task</h3>
+            <div class="form-group">
+                <label>Task Name</label>
+                <input id="taskName" placeholder="e.g. API Integration">
+            </div>
+            <div class="form-group">
+                <label>Assignee</label>
+                <select id="assign">
+                    <option>Rahul</option>
+                    <option>Sneha</option>
+                    <option>Arjun</option>
+                </select>
+            </div>
+            <label class="checkbox-group">
+                <input type="checkbox" id="priority"> 
+                High Priority
+            </label>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="addTask()">Create</button>
+                <button class="btn-secondary" onclick="resetForm()">Cancel</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Recent Activity</h3>
+            <div id="taskList">
+                <div class="task-item">
+                    <div class="task-info">
+                        <span class="task-name">Design landing page</span>
+                        <span class="task-meta">Assigned to Sneha</span>
+                    </div>
+                    <span class="badge badge-warning">Active</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function addTask() {
+        const name = document.getElementById("taskName").value;
+        const assign = document.getElementById("assign").value;
+        const priority = document.getElementById("priority").checked;
+
+        if (name === "") {
+            alert("Please provide a task name.");
+            return;
+        }
+
+        const list = document.getElementById("taskList");
+        const task = document.createElement("div");
+        task.className = "task-item";
+
+        task.innerHTML = `
+            <div class="task-info">
+                <span class="task-name">${name}</span>
+                <span class="task-meta">Assigned to ${assign}</span>
+            </div>
+            <span class="badge ${priority ? 'badge-success' : 'badge-warning'}">
+                ${priority ? 'Urgent' : 'Normal'}
+            </span>
+        `;
+
+        list.prepend(task);
+        resetForm();
+    }
+
+    function resetForm() {
+        document.getElementById("taskName").value = "";
+        document.getElementById("priority").checked = false;
+    }
+</script>
+
+</body>
+</html>

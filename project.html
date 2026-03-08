@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ControlGrid</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#080808; --s1:#0f0f0f; --s2:#141414; --s3:#1a1a1a;
+      --border:#1f1f1f; --border2:#2a2a2a; --text:#efefef;
+      --muted:#606060; --muted2:#404040; --accent:#e2ff59;
+      --accent2:#b8d400; --green:#3effa0; --green-bg:#081a0f;
+      --red:#ff5c5c; --r:6px;
+    }
+    body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; -webkit-font-smoothing:antialiased; }
+    .sidebar { width:220px; min-height:100vh; background:var(--s1); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:24px 16px; flex-shrink:0; }
+    .logo { display:flex; align-items:center; gap:10px; padding:0 8px; margin-bottom:32px; }
+    .logo-mark { width:28px; height:28px; background:var(--accent); border-radius:6px; display:grid; place-items:center; }
+    .logo-text { font-family:'DM Mono',monospace; font-size:15px; font-weight:500; letter-spacing:-0.02em; }
+    .nav-section { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; padding:0 8px; margin-bottom:8px; margin-top:20px; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:var(--r); font-size:13.5px; color:var(--muted); cursor:pointer; transition:all 0.15s; border:1px solid transparent; margin-bottom:2px; }
+    .nav-item:hover { color:var(--text); background:var(--s2); }
+    .nav-item.active { color:var(--text); background:var(--s3); border-color:var(--border2); }
+    .nav-item svg { width:15px; height:15px; flex-shrink:0; }
+    .nav-dot { margin-left:auto; width:6px; height:6px; border-radius:50%; background:var(--accent); }
+    .sidebar-footer { margin-top:auto; padding-top:16px; border-top:1px solid var(--border); }
+    .user-row { display:flex; align-items:center; gap:10px; padding:8px; border-radius:var(--r); cursor:pointer; transition:background 0.15s; }
+    .user-row:hover { background:var(--s2); }
+    .avatar { width:28px; height:28px; border-radius:50%; object-fit:cover; border:1.5px solid var(--border2); }
+    .user-name { font-size:13px; font-weight:500; }
+    .user-role { font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; }
+    .main { flex:1; padding:32px 36px; overflow-y:auto; }
+    .page { display:none; animation: fadeUp 0.3s ease; }
+    .page.active { display:block; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:32px; }
+    .page-title { font-size:20px; font-weight:600; letter-spacing:-0.03em; }
+    .page-sub { font-size:13px; color:var(--muted); font-family:'DM Mono',monospace; margin-top:2px; }
+    .pill { display:flex; align-items:center; gap:6px; padding:6px 12px; border-radius:99px; border:1px solid var(--border2); background:var(--s2); font-size:12px; color:var(--muted); font-family:'DM Mono',monospace; }
+    .pill-dot { width:6px; height:6px; border-radius:50%; background:var(--green); }
+    .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+    .stat { background:var(--s1); border:1px solid var(--border); border-radius:var(--r); padding:18px 20px; transition:border-color 0.2s; }
+    .stat:hover { border-color:var(--border2); }
+    .stat-label { font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px; }
+    .stat-value { font-size:28px; font-weight:600; letter-spacing:-0.04em; line-height:1; }
+    .stat-change { font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; margin-top:6px; }
+    .stat-change.up { color:var(--green); }
+    .content-grid { display:grid; grid-template-columns:1.6fr 1fr; gap:16px; margin-bottom:16px; }
+    .content-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+    .panel { background:var(--s1); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; margin-bottom:16px; }
+    .panel-header { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--border); }
+    .panel-title { font-size:13px; font-weight:600; }
+    .panel-action { font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; cursor:pointer; transition:color 0.15s; }
+    .panel-action:hover { color:var(--text); }
+    .panel-body { padding:16px 20px; }
+    .form-row { display:flex; gap:10px; margin-bottom:12px; }
+    .field { flex:1; }
+    .field label { display:block; font-size:11px; font-family:'DM Mono',monospace; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em; }
+    .field input, .field select, .field textarea { width:100%; padding:9px 12px; background:var(--s2); border:1px solid var(--border); border-radius:var(--r); color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; transition:border-color 0.15s; outline:none; resize:vertical; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color:var(--border2); }
+    .field input::placeholder, .field textarea::placeholder { color:var(--muted2); }
+    select option { background:var(--s2); }
+    .toggle-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+    .toggle-label { font-size:13px; color:var(--muted); }
+    .toggle { position:relative; width:36px; height:20px; cursor:pointer; }
+    .toggle input { opacity:0; width:0; height:0; }
+    .toggle-track { position:absolute; inset:0; background:var(--s3); border:1px solid var(--border2); border-radius:99px; transition:0.2s; }
+    .toggle-thumb { position:absolute; left:3px; top:3px; width:12px; height:12px; background:var(--muted); border-radius:50%; transition:0.2s; }
+    .toggle input:checked ~ .toggle-track { background:var(--accent); border-color:var(--accent); }
+    .toggle input:checked ~ .toggle-thumb { transform:translateX(16px); background:#000; }
+    .btn-row { display:flex; gap:8px; }
+    .btn { padding:9px 18px; border-radius:var(--r); font-size:13px; font-weight:500; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.15s; border:none; }
+    .btn-accent { background:var(--accent); color:#000; }
+    .btn-accent:hover { background:var(--accent2); }
+    .btn-ghost { background:transparent; color:var(--muted); border:1px solid var(--border); }
+    .btn-ghost:hover { color:var(--text); border-color:var(--border2); }
+    .btn-danger { background:transparent; color:var(--red); border:1px solid #2e1212; }
+    .btn-danger:hover { background:#1a0808; }
+    .task-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+    .task-item:last-child { border-bottom:none; }
+    .task-check { width:16px; height:16px; border:1.5px solid var(--border2); border-radius:4px; cursor:pointer; display:grid; place-items:center; flex-shrink:0; transition:all 0.15s; }
+    .task-check:hover { border-color:var(--accent); }
+    .task-check.done { background:var(--accent); border-color:var(--accent); }
+    .task-check.done::after { content:'✓'; font-size:9px; color:#000; font-weight:700; }
+    .task-name { font-size:13.5px; flex:1; transition:color 0.15s; }
+    .task-name.done { color:var(--muted); text-decoration:line-through; }
+    .task-assignee { font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; }
+    .badge { padding:3px 8px; border-radius:4px; font-size:10px; font-family:'DM Mono',monospace; font-weight:500; text-transform:uppercase; letter-spacing:0.05em; }
+    .badge-urgent { background:#1a0808; color:var(--red); border:1px solid #2e1212; }
+    .badge-normal { background:var(--s3); color:var(--muted); border:1px solid var(--border2); }
+    .badge-done { background:var(--green-bg); color:var(--green); border:1px solid #1a4028; }
+    .badge-info { background:#0d1a2e; color:#5c9fff; border:1px solid #1a2e4a; }
+    .ai-status-row { display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--border); }
+    .ai-status-row:last-child { border-bottom:none; }
+    .ai-model-name { font-size:13px; font-family:'DM Mono',monospace; }
+    .ai-model-meta { font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; margin-top:2px; }
+    .status-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+    .dot-green { background:var(--green); box-shadow:0 0 6px var(--green); }
+    .dot-yellow { background:#ffcc00; box-shadow:0 0 6px #ffcc00; }
+    .dot-red { background:var(--red); box-shadow:0 0 6px var(--red); }
+    .dot-off { background:var(--muted2); }
+    .member-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+    .member-row:last-child { border-bottom:none; }
+    .member-avatar { width:34px; height:34px; border-radius:50%; object-fit:cover; border:1.5px solid var(--border2); }
+    .member-name { font-size:13px; font-weight:500; flex:1; }
+    .member-role { font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; }
+    .bar-chart { display:flex; align-items:flex-end; gap:5px; height:60px; margin-top:8px; }
+    .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .bar { width:100%; background:var(--s3); border-radius:3px 3px 0 0; border:1px solid var(--border2); transition:background 0.2s; cursor:pointer; }
+    .bar:hover, .bar.accent { background:var(--accent); opacity:0.9; }
+    .bar-label { font-size:9px; color:var(--muted); font-family:'DM Mono',monospace; }
+    .timeline-item { display:flex; gap:16px; padding:12px 0; border-bottom:1px solid var(--border); }
+    .timeline-item:last-child { border-bottom:none; }
+    .timeline-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); margin-top:5px; flex-shrink:0; }
+    .timeline-content { flex:1; }
+    .timeline-title { font-size:13px; font-weight:500; }
+    .timeline-meta { font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; margin-top:3px; }
+    .progress-bar { height:4px; background:var(--s3); border-radius:99px; overflow:hidden; margin-top:6px; }
+    .progress-fill { height:100%; background:var(--accent); border-radius:99px; transition:width 0.5s ease; }
+    .divider { height:1px; background:var(--border); margin:16px 0; }
+    ::-webkit-scrollbar { width:4px; }
+    ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:99px; }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 14 14" fill="none" width="14" height="14">
+        <rect x="1" y="1" width="5" height="5" rx="1" fill="#000"/>
+        <rect x="8" y="1" width="5" height="5" rx="1" fill="#000"/>
+        <rect x="1" y="8" width="5" height="5" rx="1" fill="#000"/>
+        <rect x="8" y="8" width="5" height="5" rx="1" fill="#000" opacity="0.4"/>
+      </svg>
+    </div>
+    <span class="logo-text">ControlGrid</span>
+  </div>
+
+  <div class="nav-section">Workspace</div>
+  <div class="nav-item active" onclick="navigate('overview', this)">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+    Overview <span class="nav-dot"></span>
+  </div>
+  <div class="nav-item" onclick="navigate('tasks', this)">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h8M2 12h10"/></svg>
+    Tasks
+  </div>
+  <div class="nav-item" onclick="navigate('timeline', this)">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
+    Timeline
+  </div>
+
+  <div class="nav-section">System</div>
+  <div class="nav-item" onclick="navigate('ai', this)">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2l1.5 3 3.5.5-2.5 2.5.5 3.5L8 10l-3 1.5.5-3.5L3 5.5l3.5-.5z"/></svg>
+    AI Models
+  </div>
+  <div class="nav-item" onclick="navigate('team', this)">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="5" r="3"/><path d="M1 14c0-3 2-5 5-5M10 14l1.5-3 1.5 3M10 11h3"/></svg>
+    Team
+  </div>
+  <div class="nav-item" onclick="navigate('settings', this)">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.5 1.5M11.5 11.5L13 13M3 13l1.5-1.5M11.5 4.5L13 3"/></svg>
+    Settings
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <img src="https://i.pravatar.cc/32?img=5" class="avatar" alt=""/>
+      <div>
+        <div class="user-name">Arjun Dev</div>
+        <div class="user-role">admin</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- OVERVIEW -->
+  <div id="page-overview" class="page active">
+    <div class="topbar">
+      <div><div class="page-title">Overview</div><div class="page-sub">monolab / workspace</div></div>
+      <div class="pill"><span class="pill-dot"></span> All systems operational</div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-label">Active Projects</div><div class="stat-value">08</div><div class="stat-change up">↑ 2 this week</div></div>
+      <div class="stat"><div class="stat-label">Team Members</div><div class="stat-value">14</div><div class="stat-change">3 online now</div></div>
+      <div class="stat"><div class="stat-label">Tasks Completed</div><div class="stat-value">124</div><div class="stat-change up">↑ 18 this week</div></div>
+      <div class="stat"><div class="stat-label">AI Uptime</div><div class="stat-value">99.8%</div><div class="stat-change up">↑ stable</div></div>
+    </div>
+    <div class="content-grid">
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Recent Tasks</span><span class="panel-action" onclick="navigate('tasks', document.querySelector('[onclick*=tasks]'))">view all →</span></div>
+        <div class="panel-body">
+          <div class="task-item"><div class="task-check" onclick="toggleDone(this)"></div><span class="task-name">Design landing page</span><span class="task-assignee">sneha</span><span class="badge badge-normal">normal</span></div>
+          <div class="task-item"><div class="task-check" onclick="toggleDone(this)"></div><span class="task-name">Fix auth bug in API</span><span class="task-assignee">rahul</span><span class="badge badge-urgent">urgent</span></div>
+          <div class="task-item"><div class="task-check done" onclick="toggleDone(this)"></div><span class="task-name done">Setup CI/CD pipeline</span><span class="task-assignee">arjun</span><span class="badge badge-done">done</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">AI Models</span><span class="panel-action" onclick="navigate('ai', document.querySelector('[onclick*=\\\'ai\\\']'))">view all →</span></div>
+        <div class="panel-body">
+          <div class="ai-status-row"><div><div class="ai-model-name">model-3.5</div><div class="ai-model-meta">42ms avg</div></div><div style="display:flex;align-items:center;gap:8px;"><span class="badge badge-done">live</span><div class="status-dot dot-green"></div></div></div>
+          <div class="ai-status-row"><div><div class="ai-model-name">model-2.1</div><div class="ai-model-meta">staging</div></div><div style="display:flex;align-items:center;gap:8px;"><span class="badge badge-normal">staging</span><div class="status-dot dot-yellow"></div></div></div>
+          <div class="ai-status-row"><div><div class="ai-model-name">model-4.0</div><div class="ai-model-meta">67% trained</div></div><div style="display:flex;align-items:center;gap:8px;"><span class="badge badge-urgent">training</span><div class="status-dot dot-red"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TASKS -->
+  <div id="page-tasks" class="page">
+    <div class="topbar">
+      <div><div class="page-title">Tasks</div><div class="page-sub">monolab / tasks</div></div>
+      <div class="pill"><span class="pill-dot"></span> 3 active</div>
+    </div>
+    <div class="content-grid">
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Create Task</span></div>
+        <div class="panel-body">
+          <div class="form-row">
+            <div class="field"><label>Task Name</label><input id="taskName" placeholder="e.g. API integration"/></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Assignee</label><select id="assignee"><option>Rahul</option><option>Sneha</option><option>Arjun</option><option>Priya</option></select></div>
+            <div class="field"><label>Project</label><select><option>Monolab Core</option><option>API Layer</option><option>Dashboard</option></select></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Notes</label><textarea id="taskNotes" placeholder="Optional notes..." rows="2"></textarea></div>
+          </div>
+          <div class="toggle-row">
+            <span class="toggle-label">High priority</span>
+            <label class="toggle"><input type="checkbox" id="priority"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-accent" onclick="addTask()">Create Task</button>
+            <button class="btn btn-ghost" onclick="resetForm()">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">All Tasks</span><span class="panel-action" onclick="clearDone()">clear done</span></div>
+        <div class="panel-body">
+          <div id="taskList">
+            <div class="task-item"><div class="task-check" onclick="toggleDone(this)"></div><span class="task-name">Design landing page</span><span class="task-assignee">sneha</span><span class="badge badge-normal">normal</span></div>
+            <div class="task-item"><div class="task-check" onclick="toggleDone(this)"></div><span class="task-name">Fix auth bug in API</span><span class="task-assignee">rahul</span><span class="badge badge-urgent">urgent</span></div>
+            <div class="task-item"><div class="task-check done" onclick="toggleDone(this)"></div><span class="task-name done">Setup CI/CD pipeline</span><span class="task-assignee">arjun</span><span class="badge badge-done">done</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div id="page-timeline" class="page">
+    <div class="topbar">
+      <div><div class="page-title">Timeline</div><div class="page-sub">monolab / timeline</div></div>
+      <div class="pill"><span class="pill-dot"></span> Sprint 4</div>
+    </div>
+    <div class="content-grid">
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Project Progress</span></div>
+        <div class="panel-body">
+          <div style="margin-bottom:20px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13px;">Monolab Core</span><span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);">78%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:78%"></div></div>
+          </div>
+          <div style="margin-bottom:20px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13px;">API Layer</span><span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);">45%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:45%"></div></div>
+          </div>
+          <div style="margin-bottom:20px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13px;">Dashboard UI</span><span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);">92%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:92%"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13px;">AI Models</span><span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);">33%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:33%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Recent Activity</span></div>
+        <div class="panel-body">
+          <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-title">CI/CD pipeline deployed</div><div class="timeline-meta">arjun · 2h ago</div></div></div>
+          <div class="timeline-item"><div class="timeline-dot" style="background:var(--muted2)"></div><div class="timeline-content"><div class="timeline-title">Model 3.5 went live</div><div class="timeline-meta">system · 5h ago</div></div></div>
+          <div class="timeline-item"><div class="timeline-dot" style="background:var(--muted2)"></div><div class="timeline-content"><div class="timeline-title">Landing page design started</div><div class="timeline-meta">sneha · 1d ago</div></div></div>
+          <div class="timeline-item"><div class="timeline-dot" style="background:var(--muted2)"></div><div class="timeline-content"><div class="timeline-title">Sprint 4 kicked off</div><div class="timeline-meta">rahul · 2d ago</div></div></div>
+          <div class="timeline-item"><div class="timeline-dot" style="background:var(--muted2)"></div><div class="timeline-content"><div class="timeline-title">API auth bug reported</div><div class="timeline-meta">priya · 3d ago</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI MODELS -->
+  <div id="page-ai" class="page">
+    <div class="topbar">
+      <div><div class="page-title">AI Models</div><div class="page-sub">monolab / system / ai</div></div>
+      <div class="pill"><span class="pill-dot"></span> 1 live</div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-label">Live Models</div><div class="stat-value">01</div><div class="stat-change up">↑ operational</div></div>
+      <div class="stat"><div class="stat-label">Avg Latency</div><div class="stat-value">42ms</div><div class="stat-change up">↑ fast</div></div>
+      <div class="stat"><div class="stat-label">Requests Today</div><div class="stat-value">8.4k</div><div class="stat-change up">↑ 12%</div></div>
+      <div class="stat"><div class="stat-label">Uptime</div><div class="stat-value">99.8%</div><div class="stat-change up">↑ stable</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">Deployed Models</span></div>
+      <div class="panel-body">
+        <div class="ai-status-row">
+          <div><div class="ai-model-name">model-3.5</div><div class="ai-model-meta">inference · production · 42ms avg latency</div></div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:68%"></div></div>
+            <span class="badge badge-done">live</span><div class="status-dot dot-green"></div>
+          </div>
+        </div>
+        <div class="ai-status-row">
+          <div><div class="ai-model-name">model-2.1</div><div class="ai-model-meta">fine-tune · staging · awaiting review</div></div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:90%"></div></div>
+            <span class="badge badge-normal">staging</span><div class="status-dot dot-yellow"></div>
+          </div>
+        </div>
+        <div class="ai-status-row">
+          <div><div class="ai-model-name">model-4.0</div><div class="ai-model-meta">training · 67% complete · est. 3 days</div></div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:67%"></div></div>
+            <span class="badge badge-urgent">training</span><div class="status-dot dot-red"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">Weekly Requests</span></div>
+      <div class="panel-body">
+        <div class="bar-chart" style="height:100px;">
+          <div class="bar-col"><div class="bar" style="height:50px;"></div><span class="bar-label">MON</span></div>
+          <div class="bar-col"><div class="bar" style="height:75px;"></div><span class="bar-label">TUE</span></div>
+          <div class="bar-col"><div class="bar" style="height:60px;"></div><span class="bar-label">WED</span></div>
+          <div class="bar-col"><div class="bar accent" style="height:90px;"></div><span class="bar-label">THU</span></div>
+          <div class="bar-col"><div class="bar" style="height:70px;"></div><span class="bar-label">FRI</span></div>
+          <div class="bar-col"><div class="bar" style="height:30px;"></div><span class="bar-label">SAT</span></div>
+          <div class="bar-col"><div class="bar" style="height:20px;"></div><span class="bar-label">SUN</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEAM -->
+  <div id="page-team" class="page">
+    <div class="topbar">
+      <div><div class="page-title">Team</div><div class="page-sub">monolab / team</div></div>
+      <div class="pill"><span class="pill-dot"></span> 3 online</div>
+    </div>
+    <div class="content-grid">
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Members</span><span class="panel-action">+ invite</span></div>
+        <div class="panel-body">
+          <div class="member-row"><img src="https://i.pravatar.cc/34?img=1" class="member-avatar" alt=""/><div style="flex:1;"><div class="member-name">Rahul</div><div class="member-role">engineer</div></div><span class="badge badge-done">online</span><div class="status-dot dot-green"></div></div>
+          <div class="member-row"><img src="https://i.pravatar.cc/34?img=5" class="member-avatar" alt=""/><div style="flex:1;"><div class="member-name">Sneha</div><div class="member-role">designer</div></div><span class="badge badge-done">online</span><div class="status-dot dot-green"></div></div>
+          <div class="member-row"><img src="https://i.pravatar.cc/34?img=3" class="member-avatar" alt=""/><div style="flex:1;"><div class="member-name">Arjun</div><div class="member-role">ml engineer</div></div><span class="badge badge-normal">away</span><div class="status-dot dot-yellow"></div></div>
+          <div class="member-row"><img src="https://i.pravatar.cc/34?img=9" class="member-avatar" alt=""/><div style="flex:1;"><div class="member-name">Priya</div><div class="member-role">product</div></div><span class="badge badge-normal">offline</span><div class="status-dot dot-off"></div></div>
+          <div class="member-row"><img src="https://i.pravatar.cc/34?img=7" class="member-avatar" alt=""/><div style="flex:1;"><div class="member-name">Dev</div><div class="member-role">devops</div></div><span class="badge badge-done">online</span><div class="status-dot dot-green"></div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Add Member</span></div>
+        <div class="panel-body">
+          <div class="form-row"><div class="field"><label>Name</label><input placeholder="Full name"/></div></div>
+          <div class="form-row"><div class="field"><label>Email</label><input placeholder="name@monolab.io"/></div></div>
+          <div class="form-row"><div class="field"><label>Role</label><select><option>Engineer</option><option>Designer</option><option>ML Engineer</option><option>Product</option><option>DevOps</option></select></div></div>
+          <div class="btn-row" style="margin-top:4px;">
+            <button class="btn btn-accent">Send Invite</button>
+            <button class="btn btn-ghost">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="page-settings" class="page">
+    <div class="topbar">
+      <div><div class="page-title">Settings</div><div class="page-sub">monolab / settings</div></div>
+    </div>
+    <div class="content-grid">
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Workspace</span></div>
+        <div class="panel-body">
+          <div class="form-row"><div class="field"><label>Workspace Name</label><input value="monolab"/></div></div>
+          <div class="form-row"><div class="field"><label>Domain</label><input value="monolab.io"/></div></div>
+          <div class="divider"></div>
+          <div class="toggle-row"><span class="toggle-label">Email notifications</span><label class="toggle"><input type="checkbox" checked/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+          <div class="toggle-row"><span class="toggle-label">Slack integration</span><label class="toggle"><input type="checkbox"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+          <div class="toggle-row"><span class="toggle-label">Auto-deploy on merge</span><label class="toggle"><input type="checkbox" checked/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+          <div class="btn-row" style="margin-top:8px;">
+            <button class="btn btn-accent">Save Changes</button>
+            <button class="btn btn-ghost">Reset</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Danger Zone</span></div>
+        <div class="panel-body">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">These actions are irreversible. Proceed with caution.</p>
+          <div class="btn-row" style="flex-direction:column;">
+            <button class="btn btn-danger">Delete All Tasks</button>
+            <button class="btn btn-danger" style="margin-top:8px;">Reset Workspace</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  function navigate(page, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    if (el) el.classList.add('active');
+  }
+
+  function addTask() {
+    const name = document.getElementById('taskName').value.trim();
+    const assignee = document.getElementById('assignee').value;
+    const priority = document.getElementById('priority').checked;
+    if (!name) return;
+    const list = document.getElementById('taskList');
+    const item = document.createElement('div');
+    item.className = 'task-item';
+    item.innerHTML = `
+      <div class="task-check" onclick="toggleDone(this)"></div>
+      <span class="task-name">${name}</span>
+      <span class="task-assignee">${assignee.toLowerCase()}</span>
+      <span class="badge ${priority ? 'badge-urgent':'badge-normal'}">${priority ? 'urgent':'normal'}</span>`;
+    list.prepend(item);
+    resetForm();
+  }
+
+  function resetForm() {
+    document.getElementById('taskName').value = '';
+    document.getElementById('taskNotes').value = '';
+    document.getElementById('priority').checked = false;
+  }
+
+  function toggleDone(el) {
+    const item = el.closest('.task-item');
+    const nameEl = item.querySelector('.task-name');
+    const badge = item.querySelector('.badge');
+    el.classList.toggle('done');
+    nameEl.classList.toggle('done');
+    if (el.classList.contains('done')) { badge.className='badge badge-done'; badge.textContent='done'; }
+    else { badge.className='badge badge-normal'; badge.textContent='normal'; }
+  }
+
+  function clearDone() {
+    document.querySelectorAll('#taskList .task-item').forEach(i => {
+      if (i.querySelector('.task-check.done')) i.remove();
+    });
+  }
+</script>
+</body>
+</html>
